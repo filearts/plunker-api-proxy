@@ -78,8 +78,18 @@ internals.createPlunkZip = function (plunkId, revision, next) {
   
   var buildZip = function (plunk) {
     return Promise.reduce(_.values(plunk.files), function (zipBuilder, file) {
-      return zipBuilder.file(file.filename, file.content, { createFolders: true });
+      var filename = file.filename
+        .split("/")
+        .filter(Boolean)
+        .join("/");
+      
+      zipBuilder.file(filename, file.content);
+      
+      return zipBuilder;
     }, JSZip())
+      .tap(function (zipBuilder) {
+        console.log(zipBuilder);
+      })
       .call("generate", {type: "nodebuffer"});
   };
   
