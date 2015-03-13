@@ -59,7 +59,7 @@ exports.register = function (server, options, next) {
     }
   })});
   
-  server.route({ method: "GET", path: "/plunk/{plunkId}.zip", config: internals.handlePlunkZip });
+  server.route({ method: "GET", path: "/plunks/{plunkId}.zip", config: internals.handlePlunkZip });
   
 
   server.route({ method: "*", path: "/{any*}", config: createRouteConfig({
