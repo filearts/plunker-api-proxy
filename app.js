@@ -3,6 +3,12 @@ var Lookup = require("object-path");
 var _ = require("lodash");
 
 var server = new Hapi.Server({
+  cache: {
+    engine: require("catbox-memory"),
+    name: "zip",
+    allowMixedContent: true, // Allow caching Buffers
+    maxByteSize: 104857600 * 2, // 200mb
+  },
   connections: {
     routes: {
       json: {

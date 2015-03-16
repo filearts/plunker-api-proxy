@@ -41,8 +41,9 @@ exports.register = function (server, options, next) {
   
   var methodCacheConfig = {
     expiresIn: 1000 * 60 * 60, // For now, hard-coded one hour
+    cache: "zip",
   };
-  
+
   server.bind({
     config: options.config,
     upstream: upstream,
