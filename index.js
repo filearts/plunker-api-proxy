@@ -1,3 +1,4 @@
+var Boom = require("boom");
 var Joi = require("joi");
 var JSZip = require("jszip");
 var Lookup = require("object-path");
@@ -45,6 +46,7 @@ exports.register = function (server, options, next) {
   };
 
   server.bind({
+    server: server,
     config: options.config,
     upstream: upstream,
     upstreamUrl: upstrealUrl,
@@ -52,6 +54,7 @@ exports.register = function (server, options, next) {
   
   
   server.method("createPlunkZip", internals.createPlunkZip, { cache: methodCacheConfig });
+  server.method("loadTrendingPlunks", internals.loadTrendingPlunks, { cache: _.extend(methodCacheConfig, { expiresIn: 1000 * 60 * 5 }) });
   
   
   server.route({ method: "GET", path: "/proxy.html", config: createRouteConfig({
@@ -60,7 +63,16 @@ exports.register = function (server, options, next) {
     }
   })});
   
+  server.route({ method: "GET", path: "/tags/{any*}", config: internals.handleArrayEndpoint });
+  
+  // server.route({ method: "GET", path: "/users/{login}/remembered", config: internals.handleDisabledEndpoint });
+  // server.route({ method: "GET", path: "/users/{login}/thumbed", config: internals.handleDisabledEndpoint });
+  
+  // server.route({ method: "GET", path: "/plunks/remembered", config: internals.handleDisabledEndpoint });
+  server.route({ method: "GET", path: "/plunks/trending", config: internals.handleTrendingPlunks });
+  server.route({ method: "GET", path: "/plunks/popular", config: internals.handleDisabledEndpoint });
   server.route({ method: "GET", path: "/plunks/{plunkId}.zip", config: internals.handlePlunkZip });
+  server.route({ method: "GET", path: "/users/{login}/plunks/tagged/{tag}.zip", config: internals.handlePlunkCollectionZip });
   
 
   server.route({ method: "*", path: "/{any*}", config: createRouteConfig({
@@ -113,6 +125,32 @@ internals.createPlunkZip = function (plunkId, revision, next) {
     .nodeify(next);
 };
 
+internals.loadTrendingPlunks = function (sessid, p, pp, files, next) {
+  var self = this;
+  var upstreamUrl = this.upstreamUrl;
+  
+  return new Promise(function (resolve, reject) {
+    var urlBuilder = Url.parse(upstreamUrl, true);
+    
+    urlBuilder.pathname += "/plunks/trending";
+    urlBuilder.query.sessid = sessid;
+    urlBuilder.query.p = p;
+    urlBuilder.query.pp = pp;
+    urlBuilder.query.files = files;
+    
+    var url = Url.format(urlBuilder);
+    
+    console.log("Upstream request", url);
+
+    Wreck.get(url, { json: true }, function (err, resp, payload) {
+      if (err) return reject(err);
+      
+      return resolve(payload);
+    });
+  })
+    .nodeify(next);
+};
+
 
 internals.handlePlunkZip = {
   validate: {
@@ -130,5 +168,35 @@ internals.handlePlunkZip = {
   handler: function (request, reply) {
     reply(request.pre.zip)
       .type("application/zip");
+  }
+};
+
+internals.handleTrendingPlunks = {
+  validate: {
+    query: {
+      p: Joi.number().integer().min(1).default(1).optional(),
+      pp: Joi.number().integer().min(1).max(20).default(12).optional(),
+      files: Joi.string().allow("yes").default("").optional(),
+      sessid: Joi.string().alphanum().required(),
+    }
+  },
+  pre: [{
+    method: "loadTrendingPlunks(query.sessid, query.p, query.pp, query.files)",
+    assign: "plunks",
+  }],
+  handler: function (request, reply) {
+    reply(request.pre.plunks);
+  }
+};
+
+internals.handleDisabledEndpoint = {
+  handler: function (request, reply) {
+    reply(Boom.resourceGone());
+  }
+};
+
+internals.handleArrayEndpoint = {
+  handler: function (request, reply) {
+    reply([]);
   }
 };
