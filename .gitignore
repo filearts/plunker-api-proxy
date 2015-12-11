@@ -16,3 +16,6 @@ bower_components
 config.js
 
 npm-debug.log
+config.development.js
+config.production.js
+config.*.json
