@@ -14,6 +14,7 @@ node_modules
 bower_components
 
 config.js
+!adapters/config.js
 
 npm-debug.log
 config.development.js
