@@ -9,7 +9,7 @@ exports.register = function(server, options, next) {
             file: 'config.' + env + '.json'
         })
         .defaults({
-            PORT: 8888
+            PORT: process.env.PORT || 8888
         });
 
     var analyticsConfig = Nconf.get('analytics');
