@@ -1,6 +1,6 @@
 {
   "name": "plunker-api-proxy",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "dependencies": {
     "analytics-node": "^2.0.0",
