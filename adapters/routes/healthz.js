@@ -18,7 +18,7 @@ function handler(request, reply) {
         url: '/plunks',
     }, res => {
         if (res.statusCode !== 200) {
-            return reply(Boom.serverUnavailable());
+            return reply(Boom.badGateway());
         }
 
         return reply({
