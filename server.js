@@ -11,6 +11,9 @@ var server = new Hapi.Server({
     },
     connections: {
         routes: {
+            cors: {
+                additionalHeaders: ['X-Requested-With'],
+            },
             json: {
                 space: 2,
             },
@@ -45,7 +48,7 @@ var plugins = [{
 server.connection({
     host: Lookup.get(config, 'connection.host', 'localhost'),
     address: Lookup.get(config, 'connection.address', '0.0.0.0'),
-    port: Lookup.get(config, 'connection.port', 8080),
+    port: Lookup.get(config, 'services.proxy.local.port', 8080),
 });
 
 server.register(plugins, function(err) {
