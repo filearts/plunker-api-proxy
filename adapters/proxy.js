@@ -110,7 +110,7 @@ exports.register = function(server, options, next) {
         path: '/{any*}',
         config: createRouteConfig({})
     });
-    
+
     server.log(['info', 'init'], 'Started ' + exports.register.attributes.name + '.');
 
     next();
@@ -222,12 +222,12 @@ internals.handleTrendingPlunks = {
         privacy: 'public'
     },
     validate: {
-        query: {
+        query: Joi.object({
             p: Joi.number().integer().min(1).default(1).optional(),
             pp: Joi.number().integer().min(1).max(20).default(12).optional(),
             files: Joi.string().allow("yes").default("").optional(),
             sessid: Joi.string().alphanum().required(),
-        }
+        }).unknown(true)
     },
     pre: [{
         method: "loadTrendingPlunks(query.sessid, query.p, query.pp, query.files)",
