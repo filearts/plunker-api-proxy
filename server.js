@@ -13,6 +13,7 @@ var server = new Hapi.Server({
         routes: {
             cors: {
                 additionalHeaders: ['X-Requested-With'],
+                additionalExposedHeaders: ['Link'],
             },
             json: {
                 space: 2,
